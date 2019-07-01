@@ -543,6 +543,16 @@ AdaptiveNamespaceStart
         All = Left | Right | Up | Down
     } BleedDirection;
 
+    [version(NTDDI_WIN10_RS1), flags]
+#ifdef ADAPTIVE_CARDS_WINDOWS
+    [contract(InternalContract, 1)][internal]
+#endif
+    typedef[v1_enum] enum InputNecessityIndicators {
+        None = 0,
+        RequiredInputs,
+        OptionalInputs
+    } InputNecessityIndicators;
+
     declare
     {
         interface Windows.Foundation.Collections.IVector<IAdaptiveCardElement*>;
@@ -1003,6 +1013,9 @@ AdaptiveNamespaceStart
         [propget] HRESULT MinHeight([out, retval] UINT32* value);
         [propput] HRESULT MinHeight([in] UINT32 value);
 
+        [propget] HRESULT InputNecessityIndicators([out, retval] InputNecessityIndicators * value);
+        [propput] HRESULT InputNecessityIndicators([in] InputNecessityIndicators value);
+
         HRESULT ToJson([out, retval] Windows.Data.Json.JsonObject** value);
 
         HRESULT GetResourceInformation([out, retval] Windows.Foundation.Collections.IVectorView<AdaptiveRemoteResourceInformation*>** result);
@@ -1198,6 +1211,9 @@ AdaptiveNamespaceStart
     {
         [propget] HRESULT IsRequired([out, retval] boolean* value);
         [propput] HRESULT IsRequired([in] boolean value);
+
+        [propget] HRESULT ErrorMessage([out, retval] HSTRING * value);
+        [propput] HRESULT ErrorMessage([in] HSTRING value);
     };
 
     [
@@ -1392,6 +1408,9 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT InlineAction([out, retval] IAdaptiveActionElement** value);
         [propput] HRESULT InlineAction([in] IAdaptiveActionElement* value);
+
+        [propget] HRESULT Regex([out, retval] HSTRING * value);
+        [propput] HRESULT Regex([in] HSTRING value);
     };
 
     [
@@ -2928,6 +2947,9 @@ AdaptiveNamespaceStart
     {
         [propget] HRESULT DataJson([out, retval] Windows.Data.Json.JsonValue** value);
         [propput] HRESULT DataJson([in] Windows.Data.Json.JsonValue* value);
+
+        [propget] HRESULT IgnoreInputValidation([out, retval] boolean * value);
+        [propput] HRESULT IgnoreInputValidation([in] boolean value);
     };
 
     [
