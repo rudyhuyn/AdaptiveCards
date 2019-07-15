@@ -3965,6 +3965,42 @@ namespace AdaptiveNamespace
         THROW_IF_FAILED(xamlGrid.CopyTo(textBoxWithInlineAction));
     }
 
+    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* renderContext, _In_ ITextBox* textBox, ABI::Windows::UI::Color attentionColor)
+    {
+        ComPtr<IResourceDictionary> resourceDictionary;
+        RETURN_IF_FAILED(renderContext->get_OverrideStyles(&resourceDictionary));
+
+        ComPtr<IStyle> style;
+        RETURN_IF_FAILED(XamlBuilder::TryGetResourceFromResourceDictionaries<IStyle>(resourceDictionary.Get(), L"Adaptive.Input.Text.InputValidation", &style));
+
+        //ComPtr<IStyle> inputStyle = XamlHelpers::CreateXamlClass<IStyle>(HStringReference(RuntimeClass_Windows_UI_Xaml_Style));
+
+        ComPtr<IBrush>
+            lineColorBrush = XamlHelpers::GetSolidColorBrush(attentionColor);
+
+        ComPtr<ISetterBaseCollection> setters;
+        RETURN_IF_FAILED(style->get_Setters(&setters));
+
+        boolean isSealed;
+        RETURN_IF_FAILED(setters->get_IsSealed(&isSealed));
+
+        ComPtr<IVector<SetterBase*>> settersAsVector;
+        RETURN_IF_FAILED(setters.As(&settersAsVector));
+
+        ComPtr<ISetter> setter = XamlHelpers::CreateXamlClass<ISetter>(HStringReference(RuntimeClass_Windows_UI_Xaml_Setter));
+
+        settersAsVector->Append();
+
+
+        ComPtr<ITextBox> localTextBox(textBox);
+        ComPtr<IControl> textBoxAsControl;
+        RETURN_IF_FAILED(localTextBox.As(&textBoxAsControl));
+
+        RETURN_IF_FAILED(textBoxAsControl->put_BorderBrush(lineColorBrush.Get()));
+
+        return S_OK;
+    }
+
     HRESULT XamlBuilder::BuildTextInput(_In_ IAdaptiveCardElement* adaptiveCardElement,
                                         _In_ IAdaptiveRenderContext* renderContext,
                                         _In_ IAdaptiveRenderArgs* renderArgs,
@@ -4044,6 +4080,24 @@ namespace AdaptiveNamespace
         ComPtr<IFrameworkElement> textBoxAsFrameworkElement;
         RETURN_IF_FAILED(textBox.As(&textBoxAsFrameworkElement));
         RETURN_IF_FAILED(SetStyleFromResourceDictionary(renderContext, L"Adaptive.Input.Text", textBoxAsFrameworkElement.Get()));
+
+        ABI::AdaptiveNamespace::ContainerStyle containerStyle;
+        renderArgs->get_ContainerStyle(&containerStyle);
+
+        ABI::Windows::UI::Color attentionColor;
+        RETURN_IF_FAILED(GetColorFromAdaptiveColor(
+            hostConfig.Get(), ABI::AdaptiveNamespace::ForegroundColor::Attention, containerStyle, false, false, &attentionColor));
+
+        ComPtr<IAdaptiveRenderContext> lambdaRenderContext(renderContext);
+
+        EventRegistrationToken focusLostToken;
+        RETURN_IF_FAILED(textBoxAsUIElement->add_LostFocus(
+            Callback<IRoutedEventHandler>([lambdaRenderContext, attentionColor, textBox](IInspectable* /*sender*/, IRoutedEventArgs *
+                                                                                   /*args*/) -> HRESULT {
+                return HandleLostFocus(lambdaRenderContext.Get(), textBox.Get(), attentionColor);
+            })
+                .Get(),
+            &focusLostToken));
 
         if (inlineAction != nullptr)
         {

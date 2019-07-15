@@ -66,6 +66,7 @@ const PCWSTR c_defaultResourceDictionary = L"\
     </Style> \
     <Style x:Key=\"Adaptive.SelectAction\" TargetType=\"Button\" BasedOn=\"{StaticResource  Adaptive.TouchTarget}\"/> \
     <Style x:Key=\"Adaptive.Input.Text.InlineAction\" TargetType=\"Button\" BasedOn=\"{StaticResource  Adaptive.TouchTarget}\"/> \
+    <Style x:Key=\"Adaptive.Input.Text.InputValidation\" TargetType=\"TextBox\"/> \
 </ResourceDictionary>";
 
 
