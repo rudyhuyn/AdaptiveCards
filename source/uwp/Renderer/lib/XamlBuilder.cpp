@@ -3965,38 +3965,59 @@ namespace AdaptiveNamespace
         THROW_IF_FAILED(xamlGrid.CopyTo(textBoxWithInlineAction));
     }
 
-    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* renderContext, _In_ ITextBox* textBox, ABI::Windows::UI::Color attentionColor)
+    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* renderContext, _In_ ITextBox* textBox, ABI::Windows::UI::Color /*attentionColor*/)
     {
-        ComPtr<IResourceDictionary> resourceDictionary;
-        RETURN_IF_FAILED(renderContext->get_OverrideStyles(&resourceDictionary));
+        // ComPtr<IResourceDictionary> resourceDictionary;
+        // RETURN_IF_FAILED(renderContext->get_OverrideStyles(&resourceDictionary));
 
-        ComPtr<IStyle> style;
-        RETURN_IF_FAILED(XamlBuilder::TryGetResourceFromResourceDictionaries<IStyle>(resourceDictionary.Get(), L"Adaptive.Input.Text.InputValidation", &style));
+        // ComPtr<IStyle> style;
+        // RETURN_IF_FAILED(XamlBuilder::TryGetResourceFromResourceDictionaries<IStyle>(resourceDictionary.Get(),
+        //                                                                             L"Adaptive.Input.Text.InputValidation",
+        //                                                                             &style));
 
-        //ComPtr<IStyle> inputStyle = XamlHelpers::CreateXamlClass<IStyle>(HStringReference(RuntimeClass_Windows_UI_Xaml_Style));
+        ////// ComPtr<IStyle> inputStyle = XamlHelpers::CreateXamlClass<IStyle>(HStringReference(RuntimeClass_Windows_UI_Xaml_Style));
 
-        ComPtr<IBrush>
-            lineColorBrush = XamlHelpers::GetSolidColorBrush(attentionColor);
+        //// ComPtr<IBrush> lineColorBrush = XamlHelpers::GetSolidColorBrush(attentionColor);
 
-        ComPtr<ISetterBaseCollection> setters;
-        RETURN_IF_FAILED(style->get_Setters(&setters));
+        //////ComPtr<ISetterBaseCollection> setters;
+        //////RETURN_IF_FAILED(style->get_Setters(&setters));
 
-        boolean isSealed;
-        RETURN_IF_FAILED(setters->get_IsSealed(&isSealed));
+        //////boolean isSealed;
+        //////RETURN_IF_FAILED(setters->get_IsSealed(&isSealed));
 
-        ComPtr<IVector<SetterBase*>> settersAsVector;
-        RETURN_IF_FAILED(setters.As(&settersAsVector));
+        //////ComPtr<IVector<SetterBase*>> settersAsVector;
+        //////RETURN_IF_FAILED(setters.As(&settersAsVector));
 
-        ComPtr<ISetter> setter = XamlHelpers::CreateXamlClass<ISetter>(HStringReference(RuntimeClass_Windows_UI_Xaml_Setter));
+        //////ComPtr<IControlStatics> controlStatics;
+        //////ComPtr<IDependencyProperty> borderBrushProperty;
+        //////ComPtr<IDependencyObject> spChildAsDO;
+        //////RETURN_IF_FAILED(
+        ////// Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Control).Get(),
+        //////                                              &controlStatics));
+        //////RETURN_IF_FAILED(controlStatics->get_BorderBrushProperty(borderBrushProperty.GetAddressOf()));
+        //////RETURN_IF_FAILED(spChild.As(&spChildAsDO));
+        //////RETURN_IF_FAILED(spChildAsDO->ClearValue(borderBrushProperty.Get()));
 
-        settersAsVector->Append();
+        //////ComPtr<ISetter> setter = XamlHelpers::CreateXamlClass<ISetter>(HStringReference(RuntimeClass_Windows_UI_Xaml_Setter));
+        //////setter
+        //////    ->put_Property()
 
+        //////        settersAsVector->Append();
+
+        //// ComPtr<IControl> textBoxAsControl;
+        //// RETURN_IF_FAILED(localTextBox.As(&textBoxAsControl));
+
+        //// RETURN_IF_FAILED(textBoxAsControl->put_BorderBrush(lineColorBrush.Get()));
 
         ComPtr<ITextBox> localTextBox(textBox);
-        ComPtr<IControl> textBoxAsControl;
-        RETURN_IF_FAILED(localTextBox.As(&textBoxAsControl));
+        ComPtr<IFrameworkElement> textBoxAsFrameworkElement;
+        RETURN_IF_FAILED(localTextBox.As(&textBoxAsFrameworkElement));
 
-        RETURN_IF_FAILED(textBoxAsControl->put_BorderBrush(lineColorBrush.Get()));
+        textBoxAsFrameworkElement->get_Resources();
+
+        //RETURN_IF_FAILED(XamlBuilder::SetStyleFromResourceDictionary(renderContext,
+        //                                                             L"Adaptive.Input.Text.InputValidation",
+        //                                                             textBoxAsFrameworkElement.Get()));
 
         return S_OK;
     }
@@ -4093,7 +4114,7 @@ namespace AdaptiveNamespace
         EventRegistrationToken focusLostToken;
         RETURN_IF_FAILED(textBoxAsUIElement->add_LostFocus(
             Callback<IRoutedEventHandler>([lambdaRenderContext, attentionColor, textBox](IInspectable* /*sender*/, IRoutedEventArgs *
-                                                                                   /*args*/) -> HRESULT {
+                                                                                         /*args*/) -> HRESULT {
                 return HandleLostFocus(lambdaRenderContext.Get(), textBox.Get(), attentionColor);
             })
                 .Get(),
