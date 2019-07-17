@@ -3,6 +3,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Xceed.Wpf.Toolkit;
+using System.Windows.Data;
 
 namespace AdaptiveCards.Rendering.Wpf
 {
@@ -28,6 +29,20 @@ namespace AdaptiveCards.Rendering.Wpf
                 textBox.Style = context.GetStyle($"Adaptive.Input.Text.{input.Style}");
                 textBox.DataContext = input;
                 context.InputBindings.Add(input.Id, () => textBox.Text);
+
+                ValidationRule validationRule = new InputValidationRule
+                {
+                    ValidationStep = ValidationStep.UpdatedValue
+                };
+
+                textBox.BindingGroup = new BindingGroup();
+
+                textBox.BindingGroup.ValidationRules.Add(validationRule);
+                textBox.BindingGroup.ValidatesOnNotifyDataError = true;
+                textBox.BindingGroup.NotifyOnValidationError = true;
+
+                textBox.TextChanged += TextBox_TextChanged;
+
                 if (input.InlineAction != null)
                 {
                     if (context.Config.Actions.ShowCard.ActionMode == ShowCardActionMode.Inline &&
@@ -61,7 +76,7 @@ namespace AdaptiveCards.Rendering.Wpf
                             // adding button
                             var uiButton = new Button();
                             Style style = context.GetStyle($"Adaptive.Input.Text.InlineAction.Button");
-                            if(style != null)
+                            if (style != null)
                             {
                                 uiButton.Style = style;
                             }
@@ -134,6 +149,11 @@ namespace AdaptiveCards.Rendering.Wpf
                 textBlock.Text = XamlUtilities.GetFallbackText(input) ?? input.Placeholder;
                 return context.Render(textBlock);
             }
+        }
+
+        private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            (sender as TextBox).BindingGroup.CommitEdit();
         }
     }
 }

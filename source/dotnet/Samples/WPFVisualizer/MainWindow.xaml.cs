@@ -76,7 +76,7 @@ namespace WpfVisualizer
             Renderer.FeatureRegistration.Set("acTest", "1.0");
 
             // Use the Xceed rich input controls
-            Renderer.UseXceedElementRenderers();
+            //Renderer.UseXceedElementRenderers();
 
             // Register custom elements and actions
             // TODO: Change to instance property? Change to UWP parser registration

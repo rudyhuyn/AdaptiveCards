@@ -27,7 +27,23 @@ namespace AdaptiveCards.Rendering.Wpf
             textBox.Style = context.GetStyle($"Adaptive.Input.Text.{input.Style}");
             textBox.SetContext(input);
             context.InputBindings.Add(input.Id, () => textBox.Text);
+
+            ValidationRule validationRule = new InputValidationRule();
+            validationRule.ValidationStep = ValidationStep.UpdatedValue;
+
+            textBox.BindingGroup.ValidationRules.Add(validationRule);
+            textBox.BindingGroup.ValidatesOnNotifyDataError = true;
+            textBox.BindingGroup.NotifyOnValidationError = true;
+
+            textBox.TextChanged += TextBox_TextChanged;
+            
+
             return textBox;
+        }
+
+        private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            (sender as TextBox).BindingGroup.CommitEdit();
         }
     }
 }

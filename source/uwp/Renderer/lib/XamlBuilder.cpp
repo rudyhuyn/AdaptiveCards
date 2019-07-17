@@ -3965,7 +3965,7 @@ namespace AdaptiveNamespace
         THROW_IF_FAILED(xamlGrid.CopyTo(textBoxWithInlineAction));
     }
 
-    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* renderContext, _In_ ITextBox* textBox, ABI::Windows::UI::Color /*attentionColor*/)
+    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* /*renderContext*/, _In_ ITextBox* textBox, ABI::Windows::UI::Color /*attentionColor*/)
     {
         // ComPtr<IResourceDictionary> resourceDictionary;
         // RETURN_IF_FAILED(renderContext->get_OverrideStyles(&resourceDictionary));
@@ -4013,8 +4013,14 @@ namespace AdaptiveNamespace
         ComPtr<IFrameworkElement> textBoxAsFrameworkElement;
         RETURN_IF_FAILED(localTextBox.As(&textBoxAsFrameworkElement));
 
-        textBoxAsFrameworkElement->get_Resources();
+        ComPtr<IResourceDictionary> resourceDictionary;
+        RETURN_IF_FAILED(textBoxAsFrameworkElement->get_Resources(&resourceDictionary));
 
+        ComPtr<IVector<ResourceDictionary*>> mergedDictionary;
+        resourceDictionary->get_MergedDictionaries(&mergedDictionary);
+
+        mergedDictionary->GetAt()
+     
         //RETURN_IF_FAILED(XamlBuilder::SetStyleFromResourceDictionary(renderContext,
         //                                                             L"Adaptive.Input.Text.InputValidation",
         //                                                             textBoxAsFrameworkElement.Get()));
