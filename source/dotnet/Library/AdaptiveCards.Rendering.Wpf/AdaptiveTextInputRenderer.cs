@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace AdaptiveCards.Rendering.Wpf
 {
@@ -31,6 +32,7 @@ namespace AdaptiveCards.Rendering.Wpf
             ValidationRule validationRule = new InputValidationRule();
             validationRule.ValidationStep = ValidationStep.UpdatedValue;
 
+            textBox.BindingGroup = new BindingGroup();
             textBox.BindingGroup.ValidationRules.Add(validationRule);
             textBox.BindingGroup.ValidatesOnNotifyDataError = true;
             textBox.BindingGroup.NotifyOnValidationError = true;

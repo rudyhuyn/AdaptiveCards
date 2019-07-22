@@ -4,6 +4,8 @@ using System.Windows;
 using System.Windows.Controls;
 using Xceed.Wpf.Toolkit;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Markup;
 
 namespace AdaptiveCards.Rendering.Wpf
 {
@@ -40,8 +42,18 @@ namespace AdaptiveCards.Rendering.Wpf
                 textBox.BindingGroup.ValidationRules.Add(validationRule);
                 textBox.BindingGroup.ValidatesOnNotifyDataError = true;
                 textBox.BindingGroup.NotifyOnValidationError = true;
-
                 textBox.TextChanged += TextBox_TextChanged;
+
+                string errorTemplateString =
+                    "<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType = \"Control\">" +
+                        "<DockPanel>" +
+                            "<Border BorderThickness=\"2\" BorderBrush=\"Red\">" +
+                                "<AdornedElementPlaceholder/>" +
+                            "</Border>" +
+                        "</DockPanel>" +
+                    "</ControlTemplate>";
+
+                Validation.SetErrorTemplate(textBox, (ControlTemplate)XamlReader.Parse(errorTemplateString));
 
                 if (input.InlineAction != null)
                 {

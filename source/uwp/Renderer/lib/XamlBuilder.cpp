@@ -3786,12 +3786,13 @@ namespace AdaptiveNamespace
 
     void XamlBuilder::HandleInlineAcion(_In_ IAdaptiveRenderContext* renderContext,
                                         _In_ IAdaptiveRenderArgs* renderArgs,
+                                        _In_ IBorder* border,
                                         _In_ ITextBox* textBox,
                                         _In_ IAdaptiveActionElement* inlineAction,
                                         _COM_Outptr_ IUIElement** textBoxWithInlineAction)
     {
-        ComPtr<ITextBox> localTextBox(textBox);
         ComPtr<IAdaptiveActionElement> localInlineAction(inlineAction);
+        ComPtr<IBorder> localBorder(border);
 
         ABI::AdaptiveNamespace::ActionType actionType;
         THROW_IF_FAILED(localInlineAction->get_ActionType(&actionType));
@@ -3802,7 +3803,7 @@ namespace AdaptiveNamespace
         // Inline ShowCards are not supported for inline actions
         if (WarnForInlineShowCard(renderContext, localInlineAction.Get(), L"Inline ShowCard not supported for InlineAction"))
         {
-            THROW_IF_FAILED(localTextBox.CopyTo(textBoxWithInlineAction));
+            THROW_IF_FAILED(localBorder.CopyTo(textBoxWithInlineAction));
             return;
         }
 
@@ -3824,10 +3825,10 @@ namespace AdaptiveNamespace
         THROW_IF_FAILED(columnDefinitions->Append(textBoxColumnDefinition.Get()));
 
         ComPtr<IFrameworkElement> textBoxAsFrameworkElement;
-        THROW_IF_FAILED(localTextBox.As(&textBoxAsFrameworkElement));
+        THROW_IF_FAILED(localBorder.As(&textBoxAsFrameworkElement));
 
         THROW_IF_FAILED(gridStatics->SetColumn(textBoxAsFrameworkElement.Get(), 0));
-        XamlHelpers::AppendXamlElementToPanel(textBox, gridAsPanel.Get());
+        XamlHelpers::AppendXamlElementToPanel(localBorder.Get(), gridAsPanel.Get());
 
         // Create a separator column
         ComPtr<IColumnDefinition> separatorColumnDefinition = XamlHelpers::CreateXamlClass<IColumnDefinition>(
@@ -3950,6 +3951,7 @@ namespace AdaptiveNamespace
 
         if (!isMultiLine)
         {
+            ComPtr<ITextBox> localTextBox(textBox);
             ComPtr<IUIElement> textBoxAsUIElement;
             THROW_IF_FAILED(localTextBox.As(&textBoxAsUIElement));
 
@@ -3965,65 +3967,21 @@ namespace AdaptiveNamespace
         THROW_IF_FAILED(xamlGrid.CopyTo(textBoxWithInlineAction));
     }
 
-    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* /*renderContext*/, _In_ ITextBox* textBox, ABI::Windows::UI::Color /*attentionColor*/)
+    HRESULT HandleLostFocus(_In_ IAdaptiveRenderContext* /*renderContext*/, _In_ ITextBox* textBox, ABI::Windows::UI::Color attentionColor)
     {
-        // ComPtr<IResourceDictionary> resourceDictionary;
-        // RETURN_IF_FAILED(renderContext->get_OverrideStyles(&resourceDictionary));
-
-        // ComPtr<IStyle> style;
-        // RETURN_IF_FAILED(XamlBuilder::TryGetResourceFromResourceDictionaries<IStyle>(resourceDictionary.Get(),
-        //                                                                             L"Adaptive.Input.Text.InputValidation",
-        //                                                                             &style));
-
-        ////// ComPtr<IStyle> inputStyle = XamlHelpers::CreateXamlClass<IStyle>(HStringReference(RuntimeClass_Windows_UI_Xaml_Style));
-
-        //// ComPtr<IBrush> lineColorBrush = XamlHelpers::GetSolidColorBrush(attentionColor);
-
-        //////ComPtr<ISetterBaseCollection> setters;
-        //////RETURN_IF_FAILED(style->get_Setters(&setters));
-
-        //////boolean isSealed;
-        //////RETURN_IF_FAILED(setters->get_IsSealed(&isSealed));
-
-        //////ComPtr<IVector<SetterBase*>> settersAsVector;
-        //////RETURN_IF_FAILED(setters.As(&settersAsVector));
-
-        //////ComPtr<IControlStatics> controlStatics;
-        //////ComPtr<IDependencyProperty> borderBrushProperty;
-        //////ComPtr<IDependencyObject> spChildAsDO;
-        //////RETURN_IF_FAILED(
-        ////// Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Control).Get(),
-        //////                                              &controlStatics));
-        //////RETURN_IF_FAILED(controlStatics->get_BorderBrushProperty(borderBrushProperty.GetAddressOf()));
-        //////RETURN_IF_FAILED(spChild.As(&spChildAsDO));
-        //////RETURN_IF_FAILED(spChildAsDO->ClearValue(borderBrushProperty.Get()));
-
-        //////ComPtr<ISetter> setter = XamlHelpers::CreateXamlClass<ISetter>(HStringReference(RuntimeClass_Windows_UI_Xaml_Setter));
-        //////setter
-        //////    ->put_Property()
-
-        //////        settersAsVector->Append();
-
-        //// ComPtr<IControl> textBoxAsControl;
-        //// RETURN_IF_FAILED(localTextBox.As(&textBoxAsControl));
-
-        //// RETURN_IF_FAILED(textBoxAsControl->put_BorderBrush(lineColorBrush.Get()));
+        ComPtr<IBrush> lineColorBrush = XamlHelpers::GetSolidColorBrush(attentionColor);
 
         ComPtr<ITextBox> localTextBox(textBox);
+        ComPtr<IControl> textBoxAsControl;
+        RETURN_IF_FAILED(localTextBox.As(&textBoxAsControl));
+
+        RETURN_IF_FAILED(textBoxAsControl->put_BorderBrush(lineColorBrush.Get()));
+
         ComPtr<IFrameworkElement> textBoxAsFrameworkElement;
         RETURN_IF_FAILED(localTextBox.As(&textBoxAsFrameworkElement));
 
         ComPtr<IResourceDictionary> resourceDictionary;
         RETURN_IF_FAILED(textBoxAsFrameworkElement->get_Resources(&resourceDictionary));
-
-        ComPtr<IVector<ResourceDictionary*>> mergedDictionary;
-        resourceDictionary->get_MergedDictionaries(&mergedDictionary);
-
-        mergedDictionary->GetAt()
-     
-        //RETURN_IF_FAILED(XamlBuilder::SetStyleFromResourceDictionary(renderContext,
-        //                                                             L"Adaptive.Input.Text.InputValidation",
-        //                                                             textBoxAsFrameworkElement.Get()));
 
         return S_OK;
     }
@@ -4111,25 +4069,37 @@ namespace AdaptiveNamespace
         ABI::AdaptiveNamespace::ContainerStyle containerStyle;
         renderArgs->get_ContainerStyle(&containerStyle);
 
+        ComPtr<IBorder> border =
+            XamlHelpers::CreateXamlClass<IBorder>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Border));
+
+        RETURN_IF_FAILED(border->put_Child(textBoxAsUIElement.Get()));
+
         ABI::Windows::UI::Color attentionColor;
         RETURN_IF_FAILED(GetColorFromAdaptiveColor(
             hostConfig.Get(), ABI::AdaptiveNamespace::ForegroundColor::Attention, containerStyle, false, false, &attentionColor));
 
+        ComPtr<IBrush> lineColorBrush = XamlHelpers::GetSolidColorBrush(attentionColor);
+        border->put_BorderBrush(lineColorBrush.Get());
+
+        Thickness thickness = {2, 2, 2, 2};
+        border->put_BorderThickness(thickness);
+
         ComPtr<IAdaptiveRenderContext> lambdaRenderContext(renderContext);
 
-        EventRegistrationToken focusLostToken;
-        RETURN_IF_FAILED(textBoxAsUIElement->add_LostFocus(
-            Callback<IRoutedEventHandler>([lambdaRenderContext, attentionColor, textBox](IInspectable* /*sender*/, IRoutedEventArgs *
-                                                                                         /*args*/) -> HRESULT {
-                return HandleLostFocus(lambdaRenderContext.Get(), textBox.Get(), attentionColor);
-            })
-                .Get(),
-            &focusLostToken));
+        // EventRegistrationToken focusLostToken;
+        // RETURN_IF_FAILED(textBoxAsUIElement->add_LostFocus(
+        //    Callback<IRoutedEventHandler>([lambdaRenderContext, attentionColor, textBox](IInspectable* /*sender*/,
+        //    IRoutedEventArgs *
+        //                                                                                 /*args*/) -> HRESULT {
+        //        return HandleLostFocus(lambdaRenderContext.Get(), textBox.Get(), attentionColor);
+        //    })
+        //        .Get(),
+        //    &focusLostToken));
 
         if (inlineAction != nullptr)
         {
             ComPtr<IUIElement> textBoxWithInlineAction;
-            HandleInlineAcion(renderContext, renderArgs, textBox.Get(), inlineAction.Get(), &textBoxWithInlineAction);
+            HandleInlineAcion(renderContext, renderArgs, border.Get(), textBox.Get(), inlineAction.Get(), &textBoxWithInlineAction);
             if (!isMultiLine)
             {
                 RETURN_IF_FAILED(textBoxWithInlineAction.As(&textBoxAsFrameworkElement));
@@ -4145,7 +4115,7 @@ namespace AdaptiveNamespace
                 RETURN_IF_FAILED(textBoxAsFrameworkElement->put_VerticalAlignment(ABI::Windows::UI::Xaml::VerticalAlignment_Top));
             }
 
-            RETURN_IF_FAILED(textBox.CopyTo(textInputControl));
+            RETURN_IF_FAILED(border.CopyTo(textInputControl));
         }
         return S_OK;
     }
