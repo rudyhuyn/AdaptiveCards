@@ -134,7 +134,7 @@ namespace AdaptiveCards.Rendering.Wpf
 
                 if (input.IsRequired || input.RegEx != null)
                 {
-                    ValidationRule validationRule = new InputValidationRule
+                    ValidationRule validationRule = new InputValidationRule(input, textBox)
                     {
                         ValidationStep = ValidationStep.UpdatedValue
                     };
@@ -142,9 +142,9 @@ namespace AdaptiveCards.Rendering.Wpf
                     textBox.BindingGroup = new BindingGroup();
 
                     textBox.BindingGroup.ValidationRules.Add(validationRule);
-                    textBox.BindingGroup.ValidatesOnNotifyDataError = true;
                     textBox.BindingGroup.NotifyOnValidationError = true;
-                    textBox.TextChanged += TextBox_TextChanged;
+                    //textBox.TextChanged += TextBox_TextChanged;
+                    //textBox.LostFocus += TextBox_LostFocus;
 
                     string errorTemplateString =
                         "<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType = \"Control\">" +
@@ -157,7 +157,7 @@ namespace AdaptiveCards.Rendering.Wpf
                 }
 
                 FrameworkElement elementToReturn = textBox;
-                if (context.InputNecessityIndicators)
+                if (context.InputNecessityIndicators && input.IsRequired)
                 {
                     // Create a grid with a necessity indicator
                     var parentView = new Grid();
@@ -207,9 +207,14 @@ namespace AdaptiveCards.Rendering.Wpf
             }
         }
 
-        private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            (sender as TextBox).BindingGroup.CommitEdit();
-        }
+        //private static void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        //{
+        //    (sender as TextBox).BindingGroup.CommitEdit();
+        //}
+
+        //private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        //{
+        //    (sender as TextBox).BindingGroup.CommitEdit();
+        //}
     }
 }

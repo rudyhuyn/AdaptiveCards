@@ -4,10 +4,18 @@
 https://github.com/microsoft/AdaptiveCards/issues/3081
 
 ## Dependencies
-None
+We may take a dependency on WinUI 3.0 for UWP input validation
+
+## Rendering
+
+### UWP
+In UWP there isn't currently XAML support for input validation. A future feature for UWP input validation is spec'd [here](https://github.com/microsoft/microsoft-ui-xaml-specs/pull/26), has already been implemented, and will ship with WinUI 3.0 which will go into preview at Ignite in Novemeber 2019. We need to consider whether to take that dependency or roll our own input validation.
+
+### .NET
+In .NET, we can take advantage of exisiting input validation functionality provided by XAML. Specifically, we will add a validation rule to [FrameworkElement.BindingGroup.ValidationRules](https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.bindinggroup.validationrules) to validate the isRequired and, for text inputs, regex. We will then set an error template which adds an additional border around the input in the correct color from the host config.
 
 ## Backwards Compatibility Concerns
-None
+Input valiation will be ignored when sent to older versions of the renderer. No breaking changes are introduced to the existing schema or APIs as part of this feature.
 
 ## Warning and Error States
  - If a cards author sets an error message without marking it as "isRequired", or without setting a regex, a warning should be returned

@@ -29,7 +29,7 @@ namespace AdaptiveCards.Rendering.Wpf
             textBox.SetContext(input);
             context.InputBindings.Add(input.Id, () => textBox.Text);
 
-            ValidationRule validationRule = new InputValidationRule();
+            ValidationRule validationRule = new InputValidationRule(input, textBox);
             validationRule.ValidationStep = ValidationStep.UpdatedValue;
 
             textBox.BindingGroup = new BindingGroup();
